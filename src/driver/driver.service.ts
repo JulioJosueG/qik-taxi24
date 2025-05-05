@@ -1,13 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { Driver } from './entities/driver.entity';
-import { LessThan, Repository } from 'typeorm';
+import { Point } from 'geojson';
 
 @Injectable()
 export class DriverService {
   constructor(
     @InjectRepository(Driver)
-    private driversRepository: Repository<Driver>,
+    private driverRepository: Repository<Driver>,
   ) {}
 
   // create(createDriverDto: CreateDriverDto) {
@@ -15,23 +16,34 @@ export class DriverService {
   // }
 
   findAll(): Promise<Driver[]> {
-    return this.driversRepository.find();
+    return this.driverRepository.find();
   }
 
-  findAllAvailableDrivers(): Promise<Driver[]> {
-    return this.driversRepository.findBy({ isAvailable: true });
+  findAvailable(): Promise<Driver[]> {
+    return this.driverRepository.find({ where: { isAvailable: true } });
   }
 
-  findAllAvailableDriversAtLocation(location: string): Promise<Driver[]> {
-    return this.driversRepository.find({
-      where: {
-        location: LessThan(location),
-      },
-    });
+  findAvailableInRadius(
+    latitude: number,
+    longitude: number,
+  ): Promise<Driver[]> {
+    const point: Point = {
+      type: 'Point',
+      coordinates: [longitude, latitude],
+    };
+
+    return this.driverRepository
+      .createQueryBuilder('driver')
+      .where('driver.isAvailable = :isAvailable', { isAvailable: true })
+      .andWhere(
+        'ST_DWithin(driver.location, ST_SetSRID(ST_GeomFromGeoJSON(:point), 4326), 3000)',
+      )
+      .setParameter('point', JSON.stringify(point))
+      .getMany();
   }
 
-  findOne(id: number) {
-    return this.driversRepository.findOneBy({ id });
+  findOne(id: number): Promise<Driver> {
+    return this.driverRepository.findOne({ where: { id } });
   }
 
   // update(id: number, updateDriverDto: UpdateDriverDto) {

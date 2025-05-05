@@ -1,20 +1,41 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { DriverService } from './driver.service';
+import { Driver } from './entities/driver.entity';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
 @ApiTags('drivers')
-@Controller('driver')
+@Controller('drivers')
 export class DriverController {
   constructor(private readonly driverService: DriverService) {}
+
+  @Get()
+  findAll(): Promise<Driver[]> {
+    return this.driverService.findAll();
+  }
+
+  @Get('available')
+  findAvailable(): Promise<Driver[]> {
+    return this.driverService.findAvailable();
+  }
+
+  @Get('available/nearby')
+  findAvailableInRadius(
+    @Query('lat') latitude: number,
+    @Query('lng') longitude: number,
+  ): Promise<Driver[]> {
+    return this.driverService.findAvailableInRadius(latitude, longitude);
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string): Promise<Driver> {
+    return this.driverService.findOne(+id);
+  }
 
   // @Post()
   // create(@Body() createDriverDto: CreateDriverDto) {
   //   return this.driverService.create(createDriverDto);
   // }
-  @Get('findAll')
-  findAll() {
-    return this.driverService.findAll();
-  }
+
   @ApiOperation({ summary: 'Search all available drivers' })
   @Get('findAllAvailableDrivers/:id')
   findAllAvailable() {
@@ -24,11 +45,6 @@ export class DriverController {
   @Get('findAllAvailableAtLocation')
   findAllAvailableAtLocation(@Query('location') location: string) {
     return this.driverService.findAllAvailableDriversAtLocation(location);
-  }
-
-  @Get('findOne/:id')
-  findOne(@Param('id') id: string) {
-    return this.driverService.findOne(+id);
   }
 
   // @Patch(':id')

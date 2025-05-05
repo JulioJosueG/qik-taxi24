@@ -1,4 +1,5 @@
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Point } from 'geojson';
 
 export enum TripStatus {
   ACTIVE = 'active',
@@ -16,11 +17,19 @@ export class Trip {
   @Column()
   driverId: number;
 
-  @Column()
-  startingPoint: string;
+  @Column({
+    type: 'geometry',
+    spatialFeatureType: 'Point',
+    srid: 4326,
+  })
+  startingPoint: Point;
 
-  @Column()
-  endPoint: string;
+  @Column({
+    type: 'geometry',
+    spatialFeatureType: 'Point',
+    srid: 4326,
+  })
+  endPoint: Point;
 
   @Column({
     type: 'enum',

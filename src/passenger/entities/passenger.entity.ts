@@ -9,6 +9,12 @@ export class Passenger {
   @Column()
   name: string;
 
-  @OneToMany(() => Trip, (trip) => trip.driverId)
+  @Column({ nullable: true })
+  email: string;
+
+  @Column({ nullable: true })
+  phone: string;
+
+  @OneToMany(() => Trip, (trip) => trip.passengerId)
   trips: Trip[];
 }

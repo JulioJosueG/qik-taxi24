@@ -7,12 +7,14 @@ import { PassengerModule } from './passenger/passenger.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import typeorm from './config/typeorm';
+import { SeedCommand, SeederModule } from './database/seeder';
 
 @Module({
   imports: [
     DriverModule,
     TripModule,
     PassengerModule,
+    SeederModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [typeorm],
@@ -24,6 +26,6 @@ import typeorm from './config/typeorm';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, SeedCommand],
 })
 export class AppModule {}

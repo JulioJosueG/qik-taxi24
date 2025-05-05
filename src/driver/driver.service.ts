@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Driver } from './entities/driver.entity';
 import { Point } from 'geojson';
+import { LocationDto } from '../common/dto/location.dto';
 
 @Injectable()
 export class DriverService {
@@ -23,13 +24,10 @@ export class DriverService {
     return this.driverRepository.find({ where: { isAvailable: true } });
   }
 
-  findAvailableInRadius(
-    latitude: number,
-    longitude: number,
-  ): Promise<Driver[]> {
+  findAvailableInRadius(location: LocationDto): Promise<Driver[]> {
     const point: Point = {
       type: 'Point',
-      coordinates: [longitude, latitude],
+      coordinates: [location.lng, location.lat],
     };
 
     return this.driverRepository
@@ -53,4 +51,14 @@ export class DriverService {
   // remove(id: number) {
   //   return this.driversRepository.delete(id);
   // }
+
+  async updateLocation(id: number, location: LocationDto): Promise<Driver> {
+    const point: Point = {
+      type: 'Point',
+      coordinates: [location.lng, location.lat],
+    };
+
+    await this.driverRepository.update(id, { location: point });
+    return this.findOne(id);
+  }
 }

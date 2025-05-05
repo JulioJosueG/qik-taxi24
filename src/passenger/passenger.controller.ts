@@ -1,7 +1,11 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, Query } from '@nestjs/common';
 import { PassengerService } from './passenger.service';
+import { Passenger } from './entities/passenger.entity';
+import { Driver } from '../driver/entities/driver.entity';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-@Controller('passenger')
+@ApiTags('passengers')
+@Controller('passengers')
 export class PassengerController {
   constructor(private readonly passengerService: PassengerService) {}
 
@@ -11,17 +15,22 @@ export class PassengerController {
   // }
 
   @Get()
-  findAll() {
+  findAll(): Promise<Passenger[]> {
     return this.passengerService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id') id: string): Promise<Passenger> {
     return this.passengerService.findOne(+id);
   }
-  @Get()
-  findCloseDrivers(@Param('startingPoint') startingPoint: string) {
-    return this.passengerService.findCloseDrivers(startingPoint);
+
+  @ApiOperation({ summary: 'Find the 3 closest available drivers' })
+  @Get('close-drivers')
+  findCloseDrivers(
+    @Query('lat') latitude: number,
+    @Query('lng') longitude: number,
+  ): Promise<Driver[]> {
+    return this.passengerService.findCloseDrivers(latitude, longitude);
   }
 
   // @Patch(':id')

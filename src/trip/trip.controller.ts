@@ -1,29 +1,46 @@
 import { Controller, Get, Post, Body, Patch, Param } from '@nestjs/common';
 import { TripService } from './trip.service';
-import { CreateTripDto } from './dto/create-trip.dto';
+import { Trip } from './entities/trip.entity';
+import { LocationDto } from '../common/dto/location.dto';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 
-@Controller('trip')
+@ApiTags('trips')
+@Controller('trips')
 export class TripController {
   constructor(private readonly tripService: TripService) {}
 
+  @ApiOperation({ summary: 'Create a new trip' })
   @Post()
-  create(@Body() createTripDto: CreateTripDto) {
-    return this.tripService.create(createTripDto);
+  create(
+    @Body('passengerId') passengerId: number,
+    @Body('driverId') driverId: number,
+    @Body('startingPoint') startingPoint: LocationDto,
+    @Body('endPoint') endPoint: LocationDto,
+  ): Promise<Trip> {
+    return this.tripService.create(
+      passengerId,
+      driverId,
+      startingPoint,
+      endPoint,
+    );
   }
 
-  @Get()
-  findAvailable() {
+  @ApiOperation({ summary: 'Get all active trips' })
+  @Get('active')
+  findAllActive(): Promise<Trip[]> {
     return this.tripService.findAllActive();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.tripService.findOne(+id);
+  @ApiOperation({ summary: 'Complete a trip' })
+  @Patch(':id/complete')
+  complete(@Param('id') id: string): Promise<Trip> {
+    return this.tripService.complete(+id);
   }
 
-  @Patch(':id')
-  complete(@Param('id') id: string) {
-    return this.tripService.complete(+id);
+  @ApiOperation({ summary: 'Calculate trip distance in meters' })
+  @Get(':id/distance')
+  calculateDistance(@Param('id') id: string): Promise<number> {
+    return this.tripService.calculateDistance(+id);
   }
 
   // @Delete(':id')

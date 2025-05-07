@@ -5,12 +5,15 @@ import { Trip } from './entities/trip.entity';
 import { Point } from 'geojson';
 import { LocationDto } from '../common/dto/location.dto';
 import { TripStatus } from './entities/trip.entity';
+import { InvoiceService } from '../invoice/invoice.service';
+import { Invoice } from '../invoice/entities/invoice.entity';
 
 @Injectable()
 export class TripService {
   constructor(
     @InjectRepository(Trip)
     private tripRepository: Repository<Trip>,
+    private invoiceService: InvoiceService,
   ) {}
 
   async create(
@@ -46,11 +49,22 @@ export class TripService {
     });
   }
 
-  async complete(id: number): Promise<Trip> {
+  async complete(id: number): Promise<Invoice> {
+    const trip = await this.tripRepository.findOne({ where: { id } });
+    if (!trip) {
+      throw new Error('Trip not found');
+    }
+
     await this.tripRepository.update(id, {
       tripStatus: TripStatus.COMPLETE,
     });
-    return this.tripRepository.findOne({ where: { id } });
+
+    const distance = await this.calculateDistance(id);
+    return this.invoiceService.createFromTrip(trip, distance);
+  }
+
+  async generateInvoicePDF(invoice: Invoice): Promise<Buffer> {
+    return this.invoiceService.generatePDF(invoice);
   }
 
   async calculateDistance(tripId: number): Promise<number> {

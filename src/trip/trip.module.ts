@@ -3,9 +3,10 @@ import { TripService } from './trip.service';
 import { TripController } from './trip.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Trip } from './entities/trip.entity';
+import { InvoiceModule } from '../invoice/invoice.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Trip])],
+  imports: [TypeOrmModule.forFeature([Trip]), InvoiceModule],
   controllers: [TripController],
   providers: [TripService],
 })

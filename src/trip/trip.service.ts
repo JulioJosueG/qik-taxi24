@@ -54,6 +54,9 @@ export class TripService {
     if (!trip) {
       throw new Error('Trip not found');
     }
+    if (trip.tripStatus == TripStatus.COMPLETE) {
+      throw new Error('Trip is already completed');
+    }
 
     await this.tripRepository.update(id, {
       tripStatus: TripStatus.COMPLETE,

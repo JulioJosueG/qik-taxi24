@@ -53,21 +53,24 @@ export class InvoiceService {
       doc.on('data', (chunk) => chunks.push(chunk));
       doc.on('end', () => resolve(Buffer.concat(chunks)));
 
-      // Add company logo (you can add your logo here)
-      // doc.image('path/to/logo.png', 50, 45, { width: 50 });
+      const startPosition = 50;
+
+      doc.image('src/assets/taxi24Logo.png', 200, 45, {
+        width: 100,
+        height: 50,
+      });
 
       // Add company info
-      doc.fontSize(20).text('QIK TAXI', 50, 50);
-      doc.fontSize(10).text('123 Taxi Street', 50, 80);
-      doc.text('New York, NY 10001', 50, 95);
-      doc.text('Phone: (555) 123-4567', 50, 110);
-      doc.text('Email: info@qiktaxi.com', 50, 125);
+      doc.fontSize(10).text('123 Taxi Street', startPosition, 100);
+      doc.text('La Romana, LR 22000', startPosition, 110);
+      doc.text('Phone: (809) 506-3933', startPosition, 125);
+      doc.text('Email: info@qiktaxi.com', startPosition, 140);
 
       // Add invoice details
-      doc.fontSize(16).text('INVOICE', 50, 180);
-      doc.fontSize(10).text(`Invoice #: ${invoice.id}`, 50, 210);
-      doc.text(`Date: ${format(invoice.createdAt, 'PPP')}`, 50, 225);
-      doc.text(`Trip ID: ${invoice.tripId}`, 50, 240);
+      doc.fontSize(16).text('INVOICE', startPosition, 195);
+      doc.fontSize(10).text(`Invoice #: ${invoice.id}`, startPosition, 225);
+      doc.text(`Date: ${format(invoice.createdAt, 'PPP')}`, startPosition, 240);
+      doc.text(`Trip ID: ${invoice.tripId}`, startPosition, 255);
 
       // Add line items
       const tableTop = 280;
@@ -78,13 +81,13 @@ export class InvoiceService {
       // Add line items
       doc.moveDown();
       doc.text('Base Cost', 50, tableTop + 30);
-      doc.text(`$${invoice.baseCost.toFixed(2)}`, 400, tableTop + 30, {
+      doc.text(`$${invoice.baseCost}`, 400, tableTop + 30, {
         width: 100,
         align: 'right',
       });
 
-      doc.text('Tax (10%)', 50, tableTop + 50);
-      doc.text(`$${invoice.tax.toFixed(2)}`, 400, tableTop + 50, {
+      doc.text(`Tax (10%)`, 50, tableTop + 50);
+      doc.text(`$${invoice.tax}`, 400, tableTop + 50, {
         width: 100,
         align: 'right',
       });
@@ -92,7 +95,7 @@ export class InvoiceService {
       // Add total
       doc.moveDown();
       doc.fontSize(12).text('Total', 50, tableTop + 90);
-      doc.text(`$${invoice.total.toFixed(2)}`, 400, tableTop + 90, {
+      doc.text(`$${invoice.total}`, 400, tableTop + 90, {
         width: 100,
         align: 'right',
       });

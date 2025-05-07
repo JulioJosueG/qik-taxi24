@@ -4,6 +4,7 @@ import { Driver } from '../driver/entities/driver.entity';
 import { Passenger } from '../passenger/entities/passenger.entity';
 import { Trip } from '../trip/entities/trip.entity';
 import { DataSource, DataSourceOptions } from 'typeorm';
+import { Invoice } from '../invoice/entities/invoice.entity';
 
 dotenvConfig({ path: '.env' });
 
@@ -14,7 +15,7 @@ const config = {
   username: `${process.env.DATABASE_USERNAME}`,
   password: `${process.env.DATABASE_PASSWORD}`,
   database: `${process.env.DATABASE_NAME}`,
-  entities: [Driver, Passenger, Trip],
+  entities: [Driver, Passenger, Trip, Invoice],
   migrations: ['dist/migrations/*{.ts,.js}'],
   synchronize: true,
 };

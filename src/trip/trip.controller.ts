@@ -36,6 +36,7 @@ export class TripController {
   @Patch('complete/:id')
   async complete(@Param('id') id: string, @Res() res: Response): Promise<void> {
     const invoice = await this.tripService.complete(+id);
+
     const pdfBuffer = await this.tripService.generateInvoicePDF(invoice);
 
     res.set({

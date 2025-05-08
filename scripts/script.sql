@@ -24,9 +24,6 @@ CREATE TABLE "invoice" (
     CONSTRAINT "FK_invoice_trip" FOREIGN KEY ("tripId") REFERENCES "trip"("id")
 );
 
-CREATE INDEX idx_driver_location ON driver USING GIST (location);
-CREATE INDEX idx_trip_starting_point ON trip USING GIST (starting_point);
-CREATE INDEX idx_trip_end_point ON trip USING GIST (end_point);
 
 -- Sample data for completed trips with invoices
 INSERT INTO "passenger" ("name") VALUES 

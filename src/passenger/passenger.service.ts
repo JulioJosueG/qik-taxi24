@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { Passenger } from './entities/passenger.entity';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -7,6 +7,8 @@ import { Point } from 'geojson';
 
 @Injectable()
 export class PassengerService {
+  private readonly logger = new Logger(PassengerService.name);
+
   constructor(
     @InjectRepository(Passenger)
     private passengerRepository: Repository<Passenger>,
@@ -19,10 +21,12 @@ export class PassengerService {
   // }
 
   findAll(): Promise<Passenger[]> {
+    this.logger.log('Finding all passengers');
     return this.passengerRepository.find();
   }
 
   findOne(id: number): Promise<Passenger> {
+    this.logger.log(`Finding passenger with id: ${id}`);
     return this.passengerRepository.findOne({ where: { id } });
   }
 
@@ -30,6 +34,9 @@ export class PassengerService {
     latitude: number,
     longitude: number,
   ): Promise<Driver[]> {
+    this.logger.log(
+      `Finding close drivers for location: ${latitude}, ${longitude}`,
+    );
     const point: Point = {
       type: 'Point',
       coordinates: [longitude, latitude],

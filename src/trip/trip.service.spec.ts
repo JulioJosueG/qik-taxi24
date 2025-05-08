@@ -5,10 +5,12 @@ import { Trip } from './entities/trip.entity';
 import { InvoiceService } from '../invoice/invoice.service';
 import { Invoice } from '../invoice/entities/invoice.entity';
 import { TripStatus } from './entities/trip.entity';
+import { DriverService } from '../driver/driver.service';
 
 describe('TripService', () => {
   let service: TripService;
   let invoiceService: InvoiceService;
+  let moduleRef: TestingModule;
 
   const mockTrip: Trip = {
     id: 1,
@@ -43,7 +45,7 @@ describe('TripService', () => {
   };
 
   beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
+    moduleRef = await Test.createTestingModule({
       providers: [
         TripService,
         {
@@ -56,11 +58,27 @@ describe('TripService', () => {
             createFromTrip: jest.fn().mockResolvedValue(mockInvoice),
           },
         },
+        {
+          provide: DriverService,
+          useValue: {
+            findOne: jest.fn().mockResolvedValue({
+              id: 1,
+              name: 'Test Driver',
+              telephone: '1234567890',
+              dni: 'DNI123',
+              isAvailable: false,
+              location: { type: 'Point', coordinates: [-74.006, 40.7128] },
+              trips: [],
+            }),
+            updateAvailability: jest.fn(),
+            updateLocationAndAvailability: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
-    service = module.get<TripService>(TripService);
-    invoiceService = module.get<InvoiceService>(InvoiceService);
+    service = moduleRef.get<TripService>(TripService);
+    invoiceService = moduleRef.get<InvoiceService>(InvoiceService);
   });
 
   it('should be defined', () => {
@@ -69,6 +87,20 @@ describe('TripService', () => {
 
   describe('create', () => {
     it('should create a new trip', async () => {
+      const driverServiceMock = moduleRef.get<DriverService>(DriverService);
+      jest.spyOn(driverServiceMock, 'findOne').mockResolvedValueOnce({
+        id: 1,
+        name: 'Test Driver',
+        telephone: '1234567890',
+        dni: 'DNI123',
+        isAvailable: true,
+        location: { type: 'Point', coordinates: [-74.006, 40.7128] },
+        trips: [],
+      });
+      const updateAvailabilitySpy = jest.spyOn(
+        driverServiceMock,
+        'updateAvailability',
+      );
       const result = await service.create(
         1,
         1,
@@ -79,6 +111,28 @@ describe('TripService', () => {
       expect(result.passengerId).toBe(1);
       expect(result.driverId).toBe(1);
       expect(result.tripStatus).toBe(TripStatus.ACTIVE);
+      expect(updateAvailabilitySpy).toHaveBeenCalledWith(1, false);
+    });
+
+    it('should throw error if driver is not available', async () => {
+      const driverServiceMock = moduleRef.get<DriverService>(DriverService);
+      jest.spyOn(driverServiceMock, 'findOne').mockResolvedValueOnce({
+        id: 1,
+        name: 'Test Driver',
+        telephone: '1234567890',
+        dni: 'DNI123',
+        isAvailable: false,
+        location: { type: 'Point', coordinates: [-74.006, 40.7128] },
+        trips: [],
+      });
+      await expect(
+        service.create(
+          1,
+          1,
+          { lat: 40.7128, lng: -74.006 },
+          { lat: 40.73061, lng: -73.935242 },
+        ),
+      ).rejects.toThrow('Driver is not available');
     });
   });
 
@@ -93,6 +147,11 @@ describe('TripService', () => {
 
   describe('complete', () => {
     it('should complete a trip and return an invoice', async () => {
+      const driverServiceMock = moduleRef.get<DriverService>(DriverService);
+      const updateLocationAndAvailabilitySpy = jest.spyOn(
+        driverServiceMock,
+        'updateLocationAndAvailability',
+      );
       const result = await service.complete(1);
       expect(result).toBeDefined();
       expect(result).toBe(mockInvoice);
@@ -100,6 +159,11 @@ describe('TripService', () => {
         tripStatus: TripStatus.COMPLETE,
       });
       expect(invoiceService.createFromTrip).toHaveBeenCalledWith(mockTrip, 5.2);
+      expect(updateLocationAndAvailabilitySpy).toHaveBeenCalledWith(
+        mockTrip.driverId,
+        mockTrip.endPoint,
+        true,
+      );
     });
 
     it('should throw error if trip not found', async () => {

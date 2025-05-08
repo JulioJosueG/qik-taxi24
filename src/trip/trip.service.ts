@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Trip } from './entities/trip.entity';
@@ -7,13 +7,17 @@ import { LocationDto } from '../common/dto/location.dto';
 import { TripStatus } from './entities/trip.entity';
 import { InvoiceService } from '../invoice/invoice.service';
 import { Invoice } from '../invoice/entities/invoice.entity';
+import { DriverService } from '../driver/driver.service';
 
 @Injectable()
 export class TripService {
+  private readonly logger = new Logger(TripService.name);
+
   constructor(
     @InjectRepository(Trip)
     private tripRepository: Repository<Trip>,
     private invoiceService: InvoiceService,
+    private driverService: DriverService,
   ) {}
 
   async create(
@@ -22,7 +26,16 @@ export class TripService {
     startingPoint: LocationDto,
     endPoint: LocationDto,
   ): Promise<Trip> {
-    const startPoint: Point = {
+    this.logger.log(
+      `Creating new trip for passenger ${passengerId} with driver ${driverId}`,
+    );
+    // Check if driver is available
+    const driver = await this.driverService.findOne(driverId);
+    if (!driver.isAvailable) {
+      throw new Error('Driver is not available');
+    }
+
+    const startPointGeo: Point = {
       type: 'Point',
       coordinates: [startingPoint.lng, startingPoint.lat],
     };
@@ -32,10 +45,17 @@ export class TripService {
       coordinates: [endPoint.lng, endPoint.lat],
     };
 
+    if (startPointGeo.coordinates == endPointGeo.coordinates) {
+      throw new Error('Starting and ending points are the same');
+    }
+
+    // Set driver as unavailable
+    await this.driverService.updateAvailability(driverId, false);
+
     const trip = this.tripRepository.create({
       passengerId,
       driverId,
-      startingPoint: startPoint,
+      startingPoint: startPointGeo,
       endPoint: endPointGeo,
       tripStatus: TripStatus.ACTIVE,
     });
@@ -44,12 +64,14 @@ export class TripService {
   }
 
   findAllActive(): Promise<Trip[]> {
+    this.logger.log('Finding all active trips');
     return this.tripRepository.find({
       where: { tripStatus: TripStatus.ACTIVE },
     });
   }
 
   async complete(id: number): Promise<Invoice> {
+    this.logger.log(`Completing trip ${id}`);
     const trip = await this.tripRepository.findOne({ where: { id } });
     if (!trip) {
       throw new Error('Trip not found');
@@ -62,15 +84,24 @@ export class TripService {
       tripStatus: TripStatus.COMPLETE,
     });
 
+    // Update driver location and set as available
+    await this.driverService.updateLocationAndAvailability(
+      trip.driverId,
+      trip.endPoint,
+      true,
+    );
+
     const distance = await this.calculateDistance(id);
     return this.invoiceService.createFromTrip(trip, distance);
   }
 
   async generateInvoicePDF(invoice: Invoice): Promise<Buffer> {
+    this.logger.log(`Generating PDF for invoice ${invoice.id}`);
     return this.invoiceService.generatePDF(invoice);
   }
 
   async calculateDistance(tripId: number): Promise<number> {
+    this.logger.log(`Calculating distance for trip ${tripId}`);
     const trip = await this.tripRepository.findOne({ where: { id: tripId } });
     if (!trip) {
       throw new Error('Trip not found');

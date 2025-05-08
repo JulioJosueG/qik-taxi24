@@ -3,6 +3,7 @@ import { InvoiceService } from './invoice.service';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Invoice } from './entities/invoice.entity';
 import { Trip, TripStatus } from '../trip/entities/trip.entity';
+import { COST_PER_KILOMETER, TAX_RATE } from '../common/constants/rates';
 
 describe('InvoiceService', () => {
   let service: InvoiceService;
@@ -62,8 +63,8 @@ describe('InvoiceService', () => {
       expect(result).toBeDefined();
       expect(result.tripId).toBe(mockTrip.id);
       expect(result.distance).toBe(distance);
-      expect(result.baseCost).toBe(distance * 2); // COST_PER_KILOMETER = 2
-      expect(result.tax).toBe(result.baseCost * 0.1); // TAX_RATE = 0.1
+      expect(result.baseCost).toBe(distance * COST_PER_KILOMETER); // COST_PER_KILOMETER = 2
+      expect(result.tax).toBe(result.baseCost * TAX_RATE); // TAX_RATE = 0.1
       expect(result.subtotal).toBe(result.baseCost);
       expect(+result.total.toFixed(2)).toBe(
         +(result.subtotal + result.tax).toFixed(2),

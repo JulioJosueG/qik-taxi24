@@ -1,15 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Invoice } from './entities/invoice.entity';
 import { Trip } from '../trip/entities/trip.entity';
 import * as PDFDocument from 'pdfkit';
 import { format } from 'date-fns';
+import { COST_PER_KILOMETER, TAX_RATE } from '../common/constants/rates';
 
 @Injectable()
 export class InvoiceService {
-  private readonly COST_PER_KILOMETER = 2;
-  private readonly TAX_RATE = 0.1;
+  private readonly logger = new Logger(InvoiceService.name);
 
   constructor(
     @InjectRepository(Invoice)
@@ -17,11 +17,14 @@ export class InvoiceService {
   ) {}
 
   async createFromTrip(trip: Trip, distance: number): Promise<Invoice> {
+    this.logger.log(
+      `Creating invoice for trip ${trip.id} with distance ${distance}km`,
+    );
     // Base cost calculation
-    const baseCost = distance * this.COST_PER_KILOMETER;
+    const baseCost = distance * COST_PER_KILOMETER;
 
     // Tax calculation
-    const tax = baseCost * this.TAX_RATE;
+    const tax = baseCost * TAX_RATE;
 
     // Subtotal is the base cost
     const subtotal = baseCost;
@@ -42,6 +45,7 @@ export class InvoiceService {
   }
 
   async generatePDF(invoice: Invoice): Promise<Buffer> {
+    this.logger.log(`Generating PDF for invoice ${invoice.id}`);
     return new Promise((resolve) => {
       const chunks: Buffer[] = [];
       const doc = new PDFDocument({
@@ -111,10 +115,12 @@ export class InvoiceService {
   }
 
   async findByTripId(tripId: number): Promise<Invoice> {
+    this.logger.log(`Finding invoice for trip ${tripId}`);
     return this.invoiceRepository.findOne({ where: { tripId } });
   }
 
   async findByPassengerId(passengerId: number): Promise<Invoice[]> {
+    this.logger.log(`Finding invoices for passenger ${passengerId}`);
     return this.invoiceRepository
       .createQueryBuilder('invoice')
       .innerJoin('trip', 'trip', 'trip.id = invoice.tripId')
@@ -123,6 +129,7 @@ export class InvoiceService {
   }
 
   async findByDriverId(driverId: number): Promise<Invoice[]> {
+    this.logger.log(`Finding invoices for driver ${driverId}`);
     return this.invoiceRepository
       .createQueryBuilder('invoice')
       .innerJoin('trip', 'trip', 'trip.id = invoice.tripId')

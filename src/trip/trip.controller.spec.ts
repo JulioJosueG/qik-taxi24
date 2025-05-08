@@ -7,6 +7,8 @@ import { Trip } from './entities/trip.entity';
 import { TripStatus } from './entities/trip.entity';
 import { Invoice } from '../invoice/entities/invoice.entity';
 import { Response } from 'express';
+import { CreateTripDto } from './dto/create-trip.dto';
+import { DriverService } from '../driver/driver.service';
 
 describe('TripController', () => {
   let controller: TripController;
@@ -64,6 +66,14 @@ describe('TripController', () => {
             createFromTrip: jest.fn().mockResolvedValue(mockInvoice),
           },
         },
+        {
+          provide: DriverService,
+          useValue: {
+            findOne: jest.fn().mockResolvedValue({ isAvailable: true }),
+            updateAvailability: jest.fn(),
+            updateLocationAndAvailability: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -79,20 +89,22 @@ describe('TripController', () => {
     it('should create a new trip', async () => {
       jest.spyOn(tripService, 'create').mockResolvedValue(mockTrip);
 
-      const result = await controller.create(
-        1,
-        1,
-        { lat: 40.7128, lng: -74.006 },
-        { lat: 40.73061, lng: -73.935242 },
-      );
+      const createTripDto: CreateTripDto = {
+        passengerId: 1,
+        driverId: 1,
+        startingPoint: { lat: 40.7128, lng: -74.006 },
+        endPoint: { lat: 40.73061, lng: -73.935242 },
+      };
+
+      const result = await controller.create(createTripDto);
 
       expect(result).toBeDefined();
       expect(result).toEqual(mockTrip);
       expect(tripService.create).toHaveBeenCalledWith(
-        1,
-        1,
-        { lat: 40.7128, lng: -74.006 },
-        { lat: 40.73061, lng: -73.935242 },
+        createTripDto.passengerId,
+        createTripDto.driverId,
+        createTripDto.startingPoint,
+        createTripDto.endPoint,
       );
     });
   });

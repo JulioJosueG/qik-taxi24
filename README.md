@@ -97,4 +97,4 @@ The system includes the following main entities:
 
 ## License
 
-This project is [UNLICENSED](LICENSE).
+This project is UNLICENSED.

@@ -1,9 +1,10 @@
 import { Controller, Get, Post, Body, Patch, Param, Res } from '@nestjs/common';
 import { TripService } from './trip.service';
 import { Trip } from './entities/trip.entity';
-import { LocationDto } from '../common/dto/location.dto';
-import { ApiOperation, ApiTags } from '@nestjs/swagger';
+// import { LocationDto } from '../common/dto/location.dto';
+import { ApiOperation, ApiTags, ApiBody } from '@nestjs/swagger';
 import { Response } from 'express';
+import { CreateTripDto } from './dto/create-trip.dto';
 
 @ApiTags('trips')
 @Controller('trips')
@@ -12,17 +13,13 @@ export class TripController {
 
   @ApiOperation({ summary: 'Create a new trip' })
   @Post()
-  create(
-    @Body('passengerId') passengerId: number,
-    @Body('driverId') driverId: number,
-    @Body('startingPoint') startingPoint: LocationDto,
-    @Body('endPoint') endPoint: LocationDto,
-  ): Promise<Trip> {
+  @ApiBody({ type: CreateTripDto })
+  create(@Body() createTripDto: CreateTripDto): Promise<Trip> {
     return this.tripService.create(
-      passengerId,
-      driverId,
-      startingPoint,
-      endPoint,
+      createTripDto.passengerId,
+      createTripDto.driverId,
+      createTripDto.startingPoint,
+      createTripDto.endPoint,
     );
   }
 

@@ -62,21 +62,6 @@ describe('DriverController', () => {
     });
   });
 
-  describe('findAvailable', () => {
-    it('should return available drivers', async () => {
-      jest
-        .spyOn(driverService, 'findAvailable')
-        .mockResolvedValue([mockDriver]);
-
-      const result = await controller.findAvailable();
-
-      expect(result).toBeDefined();
-      expect(Array.isArray(result)).toBe(true);
-      expect(result[0].isAvailable).toBe(true);
-      expect(driverService.findAvailable).toHaveBeenCalled();
-    });
-  });
-
   describe('findAvailableInRadius', () => {
     it('should return available drivers within radius', async () => {
       jest

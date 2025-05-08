@@ -14,8 +14,9 @@ export class DriverController {
     return this.driverService.findAll();
   }
 
-  @Get('available')
-  findAvailable(): Promise<Driver[]> {
+  @ApiOperation({ summary: 'Search all available drivers' })
+  @Get('findAllAvailableDrivers')
+  findAllAvailable(): Promise<Driver[]> {
     return this.driverService.findAvailable();
   }
 
@@ -38,30 +39,4 @@ export class DriverController {
   ): Promise<Driver> {
     return this.driverService.updateLocation(+id, location);
   }
-
-  // @Post()
-  // create(@Body() createDriverDto: CreateDriverDto) {
-  //   return this.driverService.create(createDriverDto);
-  // }
-
-  @ApiOperation({ summary: 'Search all available drivers' })
-  @Get('findAllAvailableDrivers/:id')
-  findAllAvailable() {
-    return this.driverService.findAvailable();
-  }
-
-  @Get('findAllAvailableAtLocation')
-  findAllAvailableAtLocation(@Query('location') location: LocationDto) {
-    return this.driverService.findAvailableInRadius(location);
-  }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updateDriverDto: UpdateDriverDto) {
-  //   return this.driverService.update(+id, updateDriverDto);
-  // }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.driverService.remove(+id);
-  // }
 }

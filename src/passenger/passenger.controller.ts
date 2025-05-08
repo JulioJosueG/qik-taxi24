@@ -13,12 +13,6 @@ export class PassengerController {
   findAll(): Promise<Passenger[]> {
     return this.passengerService.findAll();
   }
-
-  @Get(':id')
-  findOne(@Param('id') id: string): Promise<Passenger> {
-    return this.passengerService.findOne(+id);
-  }
-
   @ApiOperation({ summary: 'Find the 3 closest available drivers' })
   @Get('close-drivers')
   findCloseDrivers(
@@ -26,5 +20,9 @@ export class PassengerController {
     @Query('longitude') longitude: number,
   ): Promise<Driver[]> {
     return this.passengerService.findCloseDrivers(latitude, longitude);
+  }
+  @Get(':id')
+  findOne(@Param('id') id: string): Promise<Passenger> {
+    return this.passengerService.findOne(+id);
   }
 }

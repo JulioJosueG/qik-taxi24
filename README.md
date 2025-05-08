@@ -56,6 +56,18 @@ A NestJS-based taxi service management system that handles trips, drivers, passe
    DATABASE_NAME=Taxi24DB
    ```
 
+3. Start the application:
+   ```bash
+   npm run start:dev
+   ```
+
+4. Access the API documentation:
+   Once the application is running, you can access the Swagger API documentation at:
+   ```
+   http://localhost:3000/api
+   ```
+   This interactive documentation allows you to explore and test all available endpoints.
+
 ## Available Scripts
 
 - `npm run start` - Start the application
@@ -80,7 +92,6 @@ A NestJS-based taxi service management system that handles trips, drivers, passe
 - `npm run test:watch` - Run unit tests in watch mode
 - `npm run test:cov` - Run unit tests with coverage
 - `npm run test:debug` - Run unit tests in debug mode
-- `npm run test:e2e` - Run end-to-end tests
 
 ## Database Schema
 

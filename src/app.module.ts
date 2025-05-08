@@ -1,6 +1,4 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { DriverModule } from './driver/driver.module';
 import { TripModule } from './trip/trip.module';
 import { PassengerModule } from './passenger/passenger.module';
@@ -25,7 +23,6 @@ import { SeedCommand, SeederModule } from './database/seeder';
         configService.get('typeorm'),
     }),
   ],
-  controllers: [AppController],
-  providers: [AppService, SeedCommand],
+  providers: [SeedCommand],
 })
 export class AppModule {}
